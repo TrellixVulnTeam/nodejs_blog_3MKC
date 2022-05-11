@@ -1,11 +1,18 @@
 const express = require('express');
 const morgan = require('morgan');
+var methodOverride = require('method-override');
 const app = express();
 const path = require('path');
 const handlebars = require('express-handlebars');
 
 const port = 3000;
 
+//change method
+app.use(methodOverride('_method'));
+
+// show file json
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 // connect databases
@@ -19,7 +26,10 @@ app.use(morgan('combined'));
 
 // Template engine
 app.engine('hbs', handlebars.engine({
-    extname: '.hbs'
+    extname: '.hbs',
+    helpers: {
+        sumstt: (a, b) => a + b,
+    }
 }));
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'resources', 'views'));

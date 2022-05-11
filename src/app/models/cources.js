@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const slug = require('mongoose-slug-generator');
+mongoose.plugin(slug);
 
 const Schema = mongoose.Schema;
 
@@ -6,9 +8,9 @@ const Cource = new Schema({
     name: String,
     describe: String,
     img: String,
-    slug: { type: String, maxLength: 255 },
-    created_at: { type: Date, default: Date.now },
-    update_at: { type: Date, default: Date.now },
+    slug: { type: String, slug: 'name', unique: true }
+}, {
+    timestamps: true,
 });
 
 

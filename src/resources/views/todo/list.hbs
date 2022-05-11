@@ -1,0 +1,185 @@
+<div class="row mt-4" style="background-color: #f1f3fb; padding:30px">
+    <div class="col-4">
+         <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" style="width: 80%;" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+    </div>
+    <div class="col-3">
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" style="width: 40%;" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
+                Sort By
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#">Name - ASC</a>
+                <a class="dropdown-item" href="#">Level - ASC</a>
+                <a class="dropdown-item" href="#">Id - ASC</a>
+            </div>
+            <button type="button" class="btn btn-primary">Name - ASC</button>
+        </div>
+
+        
+    </div>
+    <div class="col-5">
+        <div class="col-12">
+            <form class="form-inline">
+                <div class="form-group p-1">
+                    <input type="text" class="form-control" id="task" placeholder="Task">
+                </div>
+                <div class="form-group p-1">
+                    <input type="text" class="form-control" id="level" placeholder="Level">
+                </div>
+                <button type="submit" id="bnt_add_task" class="btn btn-primary">Add Task</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4" style="background-color: #f1f3fb; padding:30px">
+   <div class="col-12">
+      <table class="table">
+        <thead class="thead-light">
+            <tr>
+            <th scope="col">STT</th>
+            <th scope="col">Task</th>
+            <th scope="col">Level</th>
+            <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody id="show_todo_list">
+            
+            
+        </tbody>
+        </table>
+   </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="edit_todo_js" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="edit_todo_jsLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="edit_todo_jsLabel">Edit TODO</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+            <div class="form-group">
+                <label for="task_m">Task</label>
+                <input type="text" class="form-control" id="task_m">
+            </div>
+            <div class="form-group">
+                <label for="level_m">Level</label>
+                <input type="text" class="form-control" id="level_m">
+            </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" id="edit_todo_ajax_btn" class="btn btn-primary">Edit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+$(document).ready(function (){
+    showTodos();
+});
+
+function showTodos() {
+    $.getJSON("http://localhost:3000/api/todo", function( data ) {
+        let content = '';
+        if(data){
+            $.map(data.data, function(todo, index){
+                content += `
+                    <tr>
+                        <th scope="row">${index+1}</th>
+                        <td>${todo.task}</td>
+                        <td>${todo.level}</td>
+                        <td>
+                            <div class="btn-toolbar">
+                                <div class="btn-group mr-2"  >
+                                    <a type="button" class="btn btn-info" onclick="editToDo('${todo._id}')" >Edit</a>
+                                </div>
+                                <div class="btn-group">
+                                    <a type="button" onclick="deleteToDo('${todo._id}')" class="btn btn-danger">Delete</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `
+            });
+        }
+
+        $(document.getElementById('show_todo_list')).html(content);
+
+    });
+}
+
+// delete todo
+deleteToDo = (id) =>{
+    const cfYes = confirm('Do you want remove ???');
+    if(cfYes){
+        $.ajax({
+            type:'DELETE',
+            url:'http://localhost:3000/api/todo/delete/'+id,
+            dataType:'json',
+            data: {task: $('#task').val(), level: $('#level').val()},
+            success:function(results) {
+                if(results.success==true){
+                    showTodos();
+                }else{
+                    alert('Faill!!!');
+                }
+            }
+        });
+    }
+}
+
+// Edit TODO
+editToDo = (id) =>{
+    $('#edit_todo_js').modal('show');
+    $.getJSON("http://localhost:3000/api/todo/" + id , function( data ) {
+        if(data){
+            $('#task_m').val(data.data.task);
+            $('#level_m').val(data.data.level);
+        }
+    });
+}
+
+
+$('#edit_todo_ajax_btn').click(function(){
+    
+});
+
+
+$('#bnt_add_task').click(function (e){
+    if($('#task').val().trim() && $('#level').val().trim()){
+        e.preventDefault();
+        $.ajax({
+            type:'POST',
+            url:'http://localhost:3000/api/todo/add',
+            dataType:'json',
+            data: {task: $('#task').val(), level: $('#level').val()},
+            success:function(results) {
+                if(results.success==true){
+                    showTodos();
+                }else{
+                    alert('Faill!!!');
+                }
+            }
+        });
+    }else{     
+        alert('Please enter keywords in the Task and Level!!!');
+        e.preventDefault();
+    }
+});
+
+
+
+</script>

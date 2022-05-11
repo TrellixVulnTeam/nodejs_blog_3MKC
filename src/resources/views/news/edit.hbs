@@ -1,0 +1,33 @@
+<div class="mt-4">
+    <div class="row">
+        
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                    <th scope="col">STT</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Describe</th>
+                    <th scope="col">Image</th>
+                    <th colspan="2"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each cources}}
+                    <tr>
+                        <th scope="row">{{sumstt @index 1}}</th>
+                        <td>{{this.name}}</td>
+                        <td>{{this.describe}}</td>
+                        <td>{{this.img}}</td>
+                        <td>
+                            <a href="/news/edit_detail/{{this/slug}}" class="">Edit</a> <br>
+                        </td>
+                        <td>
+                            <a href="/news/delete/{{this/_id}}" onclick="return confirm('Are you sure you want to Remove?');" style="color: red;" class="">Delete</a>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+                </table>
+       
+    </div>
+</div>
