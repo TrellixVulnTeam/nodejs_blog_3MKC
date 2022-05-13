@@ -1,15 +1,45 @@
 const Todo = require("../models/todo");
 const { mongooseToOJ } = require('../../util/mongoosedata');
 const { mutipleMongooseToOJ } = require('../../util/mongoosedata');
-
+const { check } = require('express-validator');
 
 class ApisController {
 
 
+    // [GET] /api/todo/list
+    async listtodo(req, res, next) {
+        try {
 
-    listtodo(req, res, next) {
-        res.render('todo/list');
+            if (req.query.orderBy) {
+                let sort = {};
+                sort[req.query.orderBy] = req.query.orderDir;
+                const data = await Todo.find({}).sort(sort);
+                res.status(200).json({
+                    success: true,
+                    data: data,
+                });
+
+            } else if (req.query.task) {
+                let sort = {};
+                sort[req.query.orderBy] = req.query.orderDir;
+                let key = new RegExp(req.query.task, 'i');
+                const data = await Todo.find({ 'task': key });
+                res.status(200).json({
+                    success: true,
+                    data: data,
+                });
+            } else {
+                res.render('todo/list');
+            }
+        } catch (error) {
+            res.status(400).json({
+                success: false,
+            });
+        }
     }
+
+    // [GET] /api/todo/list
+
 
     // [GET] /api/todo
     async index(req, res, next) {

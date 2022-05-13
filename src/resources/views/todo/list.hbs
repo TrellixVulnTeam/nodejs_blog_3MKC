@@ -1,8 +1,8 @@
 <div class="row mt-4" style="background-color: #f1f3fb; padding:30px">
     <div class="col-4">
          <form class="form-inline my-2 my-lg-0">
-            <input class="form-control mr-sm-2" style="width: 80%;" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            <input class="form-control mr-sm-2" id="key_task" style="width: 80%;" type="search" placeholder="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" id="btn_search_task" type="button">Search</button>
         </form>
     </div>
     <div class="col-3">
@@ -11,11 +11,11 @@
                 Sort By
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#">Name - ASC</a>
-                <a class="dropdown-item" href="#">Level - ASC</a>
-                <a class="dropdown-item" href="#">Id - ASC</a>
+                <a class="dropdown-item" id="sort_task_desc" data-linksort="?orderBy=task&orderDir=desc" href="#">Task - DESC</a>
+                <a class="dropdown-item" id="sort_level_desc" data-linksort="?orderBy=level&orderDir=desc" href="#">Level - DESC</a>
+                <a class="dropdown-item" id="sort_id_desc" data-linksort="?orderBy=_id&orderDir=desc" href="#">Id - DESC</a>
             </div>
-            <button type="button" class="btn btn-primary">Name - ASC</button>
+            <button type="button" id="btn_show_text_sort" class="btn btn-primary">Task - Asc</button>
         </div>
 
         
@@ -75,6 +75,7 @@
                 <label for="level_m">Level</label>
                 <input type="text" class="form-control" id="level_m">
             </div>
+            <input type="hidden" name="id_todo" id="id_todo">
         </form>
       </div>
       <div class="modal-footer">
@@ -88,11 +89,16 @@
 <script>
 
 $(document).ready(function (){
-    showTodos();
+    showTodos('');
 });
 
-function showTodos() {
-    $.getJSON("http://localhost:3000/api/todo", function( data ) {
+function showTodos(param) {
+    if(param == '') {
+        var linkgetdata  = 'http://localhost:3000/api/todo';
+    }else{
+        var linkgetdata  = 'http://localhost:3000/api/todo/list' + param;
+    }  
+    $.getJSON( linkgetdata , function( data ) {
         let content = '';
         if(data){
             $.map(data.data, function(todo, index){
@@ -132,7 +138,7 @@ deleteToDo = (id) =>{
             data: {task: $('#task').val(), level: $('#level').val()},
             success:function(results) {
                 if(results.success==true){
-                    showTodos();
+                    showTodos('');
                 }else{
                     alert('Faill!!!');
                 }
@@ -148,27 +154,25 @@ editToDo = (id) =>{
         if(data){
             $('#task_m').val(data.data.task);
             $('#level_m').val(data.data.level);
+            $('#id_todo').val(data.data._id);
         }
     });
 }
 
 
-$('#edit_todo_ajax_btn').click(function(){
-    
-});
-
-
-$('#bnt_add_task').click(function (e){
-    if($('#task').val().trim() && $('#level').val().trim()){
+$('#edit_todo_ajax_btn').click(function(e){
+      if($('#task_m').val().trim() && $('#level_m').val().trim()){
+        let id = $('#id_todo').val();
         e.preventDefault();
         $.ajax({
-            type:'POST',
-            url:'http://localhost:3000/api/todo/add',
+            type:'PUT',
+            url:'http://localhost:3000/api/todo/edit/' + id,
             dataType:'json',
-            data: {task: $('#task').val(), level: $('#level').val()},
+            data: {task: $('#task_m').val(), level: $('#level_m').val()},
             success:function(results) {
                 if(results.success==true){
-                    showTodos();
+                $('#edit_todo_js').modal('hide');
+                    showTodos('');
                 }else{
                     alert('Faill!!!');
                 }
@@ -179,6 +183,81 @@ $('#bnt_add_task').click(function (e){
         e.preventDefault();
     }
 });
+
+
+
+// Sort ToDo 
+$('#bnt_add_task').click(function (e){
+    if($('#task').val().trim() && $('#level').val().trim()){
+        e.preventDefault();
+        $.ajax({
+            type:'POST',
+            url:'http://localhost:3000/api/todo/add',
+            dataType:'json',
+            data: {task: $('#task').val(), level: $('#level').val()},
+            success:function(results) {
+                if(results.success==true){
+                    showTodos('');
+                }else{
+                    alert('Faill!!!');
+                }
+            }
+        });
+    }else{     
+        alert('Please enter keywords in the Task and Level!!!');
+        e.preventDefault();
+    }
+});
+
+$('#sort_task_desc').click(function(e){
+    e.preventDefault();
+    let linksort = $(this).data("linksort");
+    if(linksort){
+        showTodos(linksort);
+        $('#btn_show_text_sort').text('Task - Desc');
+    }else{
+         showTodos('');
+    }
+
+});
+
+$('#sort_id_desc').click(function(e){
+    e.preventDefault();
+    let linksort = $(this).data("linksort");
+    if(linksort){
+        showTodos(linksort);
+        $('#btn_show_text_sort').text('ID - Desc');
+    }else{
+         showTodos('');
+    }
+
+});
+
+$('#sort_level_desc').click(function(e){
+    e.preventDefault();
+    let linksort = $(this).data("linksort");
+    if(linksort){
+        showTodos(linksort);
+         $('#btn_show_text_sort').text('Level - Desc');
+    }else{
+        showTodos('');
+    }
+
+});
+
+
+// Search Task
+$('#btn_search_task').click(function(e){
+    e.preventDefault();
+    
+    let key = $('#key_task').val();
+    if(key !== ''){
+        let link = "?task="+ key;
+        showTodos(link);
+    }
+    
+});
+
 
 
 
